@@ -1,4 +1,25 @@
-import Data.List (transpose)
+module Board (
+  Board,
+  Player,
+  mkBoard,
+  mkPlayer,
+  mkOpponent,
+  size,
+  row,
+  column,
+  mark,
+  isEmpty,
+  isMarked,
+  isMarkedBy,
+  marker,
+  isFull,
+  isWonBy,
+  isDraw,
+  isGameOver,
+  boardToStr
+) where
+
+import Data.List
 type Board = [[Int]]
 type Player = Int
 
