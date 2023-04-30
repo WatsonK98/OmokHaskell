@@ -24,7 +24,7 @@ row y bd = bd !! (y-1)
 
 --Returns a Column
 column :: Int -> Board -> [Int]
-column x bd = map (!! (x-1)) bd
+column x = map (!! (x-1))
 
 --Places a player marker 1 or 2 on the board
 mark :: Int -> Int -> Board -> Player -> Board
@@ -48,14 +48,14 @@ marker x y bd = (bd !! (y-1)) !! (x-1)
 
 --Checks if the board is full
 isFull :: Board -> Bool
-isFull bd = all (\row -> all (\c -> c /= 0) row) bd
+isFull = all (notElem 0)
 
 diag :: [[a]] -> [a]
 diag m = [m !! i !! i | i <- [0..length m - 1]]
 
 --Checks if game is won by a player
 isWonBy :: Board -> Int -> Bool
-isWonBy bd p = or (map (all (== p)) (rows ++ cols ++ diags))
+isWonBy bd p = any (all (== p)) (rows ++ cols ++ diags)
   where
     rows = bd
     cols = transpose bd
@@ -74,20 +74,6 @@ boardToStr :: (Int -> Int -> Char) -> [[Int]] -> String
 boardToStr playerToChar bd =
   let header = "  x 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n"
       line = "y ------------------------------\n"
-      rowToString row = '|' : [playerToChar x y | x <- row, let y = head row, y /= -1] ++ "\n"
+      rowToString row = '|' : [playerToChar x y | let y = head row, y /= - 1, x <- row] ++ "\n"
       boardString = concat [rowToString row | row <- bd]
   in header ++ line ++ boardString
-
-playGame :: Board -> Int -> IO ()
-playGame bd p = do
-  putStr $ boardToStr playerToChar bd
-  if isWonBy bd p
-    then putStrLn $ "Player " ++ [playerToChar p] ++ " wins!"
-    else if isDraw bd
-      then putStrLn "The game is a draw."
-      else do
-        putStrLn $ "Player " ++ [playerToChar p] ++ ", make your move."
-        (x, y) <- readXY bd p
-        let bd' = mark x y bd p
-        playGame bd' (otherPlayer p)
-
