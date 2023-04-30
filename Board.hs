@@ -1,61 +1,79 @@
 import Data.List (transpose)
+type Board = [[Int]]
+type Player = Int
 
-mkBoard :: Int -> [[Char]]
-mkBoard n = replicate n (replicate n '.')
+--Create a board that is a 15x15 filled with 0's
+mkBoard :: Int -> Board
+mkBoard n = replicate n (replicate n 0)
 
+--Indicate the first player
 mkPlayer :: Int
 mkPlayer = 1
 
+--Indicate the second player
 mkOpponent :: Int
 mkOpponent = 2
 
-size :: [[Char]] -> Int
-size = length
+--Returns the board size
+size :: Board -> Int
+size bd = 15
 
-row :: Int -> [[Char]] -> [Char]
+--Returns a row
+row :: Int -> Board -> [Int]
 row y bd = bd !! (y-1)
 
-column :: Int -> [[Char]] -> [Char]
-column x = map (!! (x-1))
+--Returns a Column
+column :: Int -> Board -> [Int]
+column x bd = map (!! (x-1)) bd
 
-mark :: Int -> Int -> [[Char]] -> Char -> [[Char]]
+--Places a player marker 1 or 2 on the board
+mark :: Int -> Int -> Board -> Player -> Board
 mark x y bd p = take (y-1) bd ++ [take (x-1) (bd !! (y-1)) ++ [p] ++ drop x (bd !! (y-1))] ++ drop y bd
 
-isEmpty :: Int -> Int -> [[Char]] -> Bool
-isEmpty x y bd = (bd !! (y-1)) !! (x-1) == '.'
+--Checks if the coordinates are empty ie. 0
+isEmpty :: Int -> Int -> Board -> Bool
+isEmpty x y bd = (bd !! (y-1)) !! (x-1) == 0
 
-isMarked :: Int -> Int -> [[Char]] -> Bool
+--Checks if the coordinate contains anything but 0
+isMarked :: Int -> Int -> Board -> Bool
 isMarked x y bd = not (isEmpty x y bd)
 
-isMarkedBy :: Int -> Int -> [[Char]] -> Char -> Bool
+--Checks if the corrdinates are marked by a player
+isMarkedBy :: Int -> Int -> Board -> Player -> Bool
 isMarkedBy x y bd p = (bd !! (y-1)) !! (x-1) == p
 
-marker :: Int -> Int -> [[Char]] -> Char
+--Return the player of a marked coordinate
+marker :: Int -> Int -> Board -> Player
 marker x y bd = (bd !! (y-1)) !! (x-1)
 
-isFull :: [[Char]] -> Bool
-isFull = all (notElem '.')
+--Checks if the board is full
+isFull :: Board -> Bool
+isFull bd = all (\row -> all (\c -> c /= 0) row) bd
 
 diag :: [[a]] -> [a]
 diag m = [m !! i !! i | i <- [0..length m - 1]]
 
-isWonBy :: [[Char]] -> Char -> Bool
-isWonBy bd p = any (all (== p)) (rows ++ cols ++ diags)
+--Checks if game is won by a player
+isWonBy :: Board -> Int -> Bool
+isWonBy bd p = or (map (all (== p)) (rows ++ cols ++ diags))
   where
     rows = bd
     cols = transpose bd
     diags = [diag bd, diag (map reverse bd)]
 
-isDraw :: [[Char]] -> Bool
-isDraw bd = isFull bd && not (isWonBy bd 'X') && not (isWonBy bd 'O')
+--Checks if game is a draw
+isDraw :: Board -> Bool
+isDraw bd = isFull bd && not (isWonBy bd 1) && not (isWonBy bd 2)
 
-isGameOver :: [[Char]] -> Bool
-isGameOver bd = isDraw bd || isWonBy bd 'X' || isWonBy bd 'O'
+--Checks if game is over
+isGameOver :: Board -> Bool
+isGameOver bd = isDraw bd || isWonBy bd 1 || isWonBy bd 2
 
+--Outputs the OMOK board
 boardToStr :: (Int -> Int -> Char) -> [[Int]] -> String
 boardToStr playerToChar bd =
   let header = "  x 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5\n"
       line = "y ------------------------------\n"
-      rowToString row = '|' : [playerToChar x y | let y = head row, y /= - 1, x <- row] ++ "\n"
+      rowToString row = '|' : [playerToChar x y | x <- row, let y = head row, y /= -1] ++ "\n"
       boardString = concat [rowToString row | row <- bd]
   in header ++ line ++ boardString
