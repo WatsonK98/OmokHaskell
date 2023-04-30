@@ -1,4 +1,4 @@
-import Board ()
+import Board
 
 playerToChar :: Int -> Char
 playerToChar p
