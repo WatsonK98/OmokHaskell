@@ -33,7 +33,7 @@ module Board where
   --Moves through the diagonal row by row
   nextRowLeftDiag :: Int -> [[a]] -> Int -> [a]
   nextRowLeftDiag x bd n = if n > length bd || x == 0 then [] else (reverse (row n bd) !! (x - 1)) : nextRowLeftDiag (x - 1) bd (n + 1)
-  --checks the diagonal
+  
   ldiag :: Int -> [[a]] -> [a]
   ldiag x bd
     | x == 0 = []
@@ -44,7 +44,7 @@ module Board where
   --Moves through the diagonal row by row
   nextRowRightDiag :: Int -> [[a]] -> Int -> [a]
   nextRowRightDiag x bd n = if n > length bd || x == 0 then [] else (row n bd !! (x - 1)) : nextRowRightDiag (x - 1) bd (n + 1)
-  --checks the diagonal
+
   rdiag :: Int -> [[a]] -> [a]
   rdiag x bd
     | x == 0 = []
