@@ -3,6 +3,7 @@
 --Dr. Cheon
 --Board Module
 
+
 module Board where
 
   --Create an board of n rows and n colums
@@ -20,6 +21,7 @@ module Board where
 
   -- Return row
   row y bd = bd !! (y - 1) -- return value of bd at (y - 1) index
+
 
   -- column x bd - Return a column x of a board bd, where x is a 1-based index
   nextRow x bd n = if n > size bd then [] else (row n bd !! (x - 1)) : nextRow x bd (n + 1) -- if n is rgeater than the size of board stop, else get the row we are on get the x index, lastly move the the next row
@@ -48,11 +50,12 @@ module Board where
   --isMarked x y bd - Does a place (x,y) of a board bd have a stone placed
   isMarked x y bd = row y bd !! (x - 1) /= "."
 
+
   --isMarkedBy x y bd p - Does a place (x,y) of a board bd have a stone placed by a player p
   isMarkedBy x y bd p = row y bd !! (x - 1) == p
-
   --Return the player of the stone placed on a place (x,y) of a board bd
   marker x y board = row y board !! (x - 1)
+
 
   --Check if board is full
   isFull = checkXY 1 1
@@ -62,6 +65,7 @@ module Board where
     | x > (size bd) && y > (size bd) = True
     | isMarkedBy x y bd "." = False
     | otherwise = checkXY (x + 1) (y + 1) bd
+
 
   --Check if won conditions
   isWonBy bd p = (rowsAndCols bd 1 0 0 p || leftAndRightDiag bd 1 0 0 p) == True

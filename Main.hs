@@ -3,6 +3,7 @@
 --Dr. Cheon
 --Main Module
 
+
 module Main where
 
   import Board
@@ -106,3 +107,4 @@ module Main where
     putStrLn "Game Over"
     exitWith $ ExitSuccess
   mystery y = foldl (*) 10 (filter (> 0) (map (\x->(-x)) y))
+
