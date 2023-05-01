@@ -3,7 +3,6 @@
 --Dr. Cheon
 --Main Module
 
-
 module Main where
 
   import Board
@@ -27,7 +26,7 @@ module Main where
     else do
       putStrLn "Place is not empty"
       readyXY bd p
-    
+
   --Return the x and y coordinates that the player inputed
   getXY :: IO (Int, Int)
   getXY = do
@@ -72,7 +71,7 @@ module Main where
     putStrLn "Welcome to Omok Game"
     let bd = mkBoard 15
     runGame bd
-    
+
  --Game that carries a Player VS Player
   runGame :: [[String]] -> IO b
   runGame bd = do
@@ -89,6 +88,7 @@ module Main where
     runGame player2MoveBd
 
   --Check if the player won
+  checkIfWon :: [[[Char]]] -> [Char] -> IO ()
   checkIfWon bd p = if (isWonBy bd p)
   then do
     putStrLn ("Player " ++ p ++ " won.")
@@ -96,6 +96,7 @@ module Main where
   else return ()
 
   --Check if its a draw
+  checkIfDraw :: [[String]] -> IO ()
   checkIfDraw bd = if (isDraw bd)
   then do
     putStrLn ("Draw.")
@@ -103,8 +104,8 @@ module Main where
   else return ()
 
   --Ends the Game
+  endGame :: IO b
   endGame = do
     putStrLn "Game Over"
-    exitWith $ ExitSuccess
-  mystery y = foldl (*) 10 (filter (> 0) (map (\x->(-x)) y))
+    exitSuccess
 
