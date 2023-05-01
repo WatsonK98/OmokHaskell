@@ -105,4 +105,3 @@ module Main where
   endGame = do
     putStrLn "Game Over"
     exitSuccess
-
