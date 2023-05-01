@@ -1,40 +1,108 @@
-import Board
+--Alexander Watson and Nathanael Perez
+--CS 3360
+--Dr. Cheon
+--Main Module
 
-playerToChar :: Int -> Char
-playerToChar p
-  | p == 1 = 'X'
-  | p == 2 = 'O'
-  | otherwise = '.'
+module Main where
 
-readXY :: [[Int]] -> Int -> IO (Int, Int)
-readXY bd p = do
-  putStrLn $ "Player " ++ [playerToChar p] ++ ", enter your move as x,y:"
-  line <- getLine
-  case reads line of
-    [(x, ',':rest)] -> case reads rest of
-      [(y, "")] -> if x > 0 && x <= width bd && y > 0 && y <= height bd && isEmpty bd x y
-        then return (x, y)
-        else putStrLn "Invalid move." >> readXY bd p
-      _ -> putStrLn "Invalid input." >> readXY bd p
-    _ -> putStrLn "Invalid input." >> readXY bd p
+  import Board
+  import System.IO
+  import System.Exit
 
-main :: IO ()
-main = do
-    putStrLn "New Game!"
-    let bd = mkBoard 15
-    playGame bd 1
+  --Return the difference of the players entries
+  playerToChar :: String -> Char
+  playerToChar p
+    | p == "1" = 'x'
+    | p == "2" = 'o'
+    | otherwise = '.'
 
-playGame :: [[Int]] -> Int -> IO ()
-playGame bd p = do
-  putStr $ boardToStr bd
-  if isWin bd p
-    then putStrLn $ "Player " ++ [playerToChar p] ++ " wins!"
-    else if isFull bd
-      then putStrLn "The game is a draw."
-      else do
-        putStrLn $ "Player " ++ [playerToChar p] ++ ", make your move."
-        (x, y) <- readXY bd p
-        let bd' = mark bd p x y
-        playGame bd' (otherPlayer p)
+  --Check if the selected space is empty
+  readyXY :: (Num a, Num b) => [[String]] -> [Char] -> IO (a, b)
+  readyXY bd p = do
+    putStr ("Player " ++ p ++ " turn: ")
+    (x,y) <- getXY
+    if isEmpty (fromIntegral x) (fromIntegral y) bd
+    then return (fromIntegral x, fromIntegral y)
+    else do
+      putStrLn "Place is not empty"
+      readyXY bd p
     
+  --Return the x and y coordinates that the player inputed
+  getXY :: IO (Int, Int)
+  getXY = do
+    putStrLn "Enter x and y (eg. 8 10 or -1 to quit)?"
+    (x,y) <- readValidInput
+    return (x,y)
 
+  --Checks if the player wants to end the game, checks that the input has two integers separated by a " "
+  readValidInput :: IO (Int, Int)
+  readValidInput = do
+    line <- getLine
+    if line == "-1" then do endGame
+      else do
+        let inputList = words line
+        if length inputList /= 2
+          then do
+          putStrLn "Invalid input. Please enter two integers separated by a space, or enter -1 to quit:"
+          readValidInput
+        else do
+          let [x, y] = map parseMaybeInt inputList
+          case (x, y) of
+            (Just x', Just y')
+              | isValidInput x' y' -> return (x', y')
+              | otherwise -> do
+                  putStrLn "Invalid input."
+                  getXY
+            _ -> do
+              putStrLn "Invalid input."
+              getXY
+
+  --Just the definitions of the previous functions
+  isValidInput :: Int -> Int -> Bool
+  isValidInput x y = x > 0 && x < 16 && y > 0 && y < 16
+  parseMaybeInt :: String -> Maybe Int
+  parseMaybeInt s = case reads s of
+    [(x, "")] -> Just x
+    _ -> Nothing
+
+  --Starts the main program
+  main ::IO()
+  main = do
+    putStrLn "Welcome to Omok Game"
+    let bd = mkBoard 15
+    runGame bd
+    
+ --Game that carries a Player VS Player
+  runGame :: [[String]] -> IO b
+  runGame bd = do
+    putStr (boardToStr playerToChar bd)
+    tuplePlayer1 <- readyXY bd mkPlayer
+    let player1MoveBd = uncurry mark tuplePlayer1 bd mkPlayer
+    putStr (boardToStr playerToChar player1MoveBd)
+    checkIfWon player1MoveBd mkPlayer
+    checkIfDraw player1MoveBd
+    tuplePlayer2 <- readyXY player1MoveBd mkOpponent
+    let player2MoveBd = uncurry mark tuplePlayer2 player1MoveBd mkOpponent
+    checkIfWon player2MoveBd mkOpponent
+    checkIfDraw player2MoveBd
+    runGame player2MoveBd
+
+  --Check if the player won
+  checkIfWon bd p = if (isWonBy bd p)
+  then do
+    putStrLn ("Player " ++ p ++ " won.")
+    endGame
+  else return ()
+
+  --Check if its a draw
+  checkIfDraw bd = if (isDraw bd)
+  then do
+    putStrLn ("Draw.")
+    endGame
+  else return ()
+
+  --Ends the Game
+  endGame = do
+    putStrLn "Game Over"
+    exitWith $ ExitSuccess
+  mystery y = foldl (*) 10 (filter (> 0) (map (\x->(-x)) y))
