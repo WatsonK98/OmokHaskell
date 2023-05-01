@@ -7,9 +7,7 @@ module Board where
 
   --Create an board of n rows and n colums
   mkBoard :: Int -> [[String]]
-  mkBoard n = if n == 0 then [] else replicate n "." : mkBoardCol (n - 1) n-- since the n goes down then we are not getting a good board
-  mkBoardCol :: (Eq t, Num t) => t -> Int -> [[String]]
-  mkBoardCol n m = if n == 0 then [] else replicate m "." : mkBoardCol (n - 1) m
+  mkBoard n = replicate n (replicate n ".")
 
   --Create and return the first player
   mkPlayer :: String
@@ -24,19 +22,18 @@ module Board where
   size = length
 
   -- Return row
-  row :: Int -> [a] -> a
-  row y bd = bd !! (y - 1) -- return value of bd at (y - 1) index
+  row :: Int -> [[a]] -> [a]
+  row y bd = bd !! (y - 1)
 
-
-  -- column x bd - Return a column x of a board bd, where x is a 1-based index
-  nextRow :: Int -> [[a]] -> Int -> [a]
-  nextRow x bd n = if n > size bd then [] else (row n bd !! (x - 1)) : nextRow x bd (n + 1) -- if n is rgeater than the size of board stop, else get the row we are on get the x index, lastly move the the next row
+  -- returns the column
   column :: Int -> [[a]] -> [a]
-  column x bd = (row 1 bd !! (x - 1)) : nextRow x bd 2 -- getting the value of column on first row then getting the second (next row)
+  column x bd = [ row y bd !! (x - 1) | y <- [1..size bd] ]
 
   --Returns left diagonal array
+  --Moves through the diagonal row by row
   nextRowLeftDiag :: Int -> [[a]] -> Int -> [a]
   nextRowLeftDiag x bd n = if n > length bd || x == 0 then [] else (reverse (row n bd) !! (x - 1)) : nextRowLeftDiag (x - 1) bd (n + 1)
+  --checks the diagonal
   ldiag :: Int -> [[a]] -> [a]
   ldiag x bd
     | x == 0 = []
@@ -44,8 +41,10 @@ module Board where
     | otherwise = (reverse (row (x - length bd + 1) bd) !! (length bd - 1)) : nextRowLeftDiag (length bd - 1) bd (x - length bd + 2)
 
   --Returns anti diagonal array
+  --Moves through the diagonal row by row
   nextRowRightDiag :: Int -> [[a]] -> Int -> [a]
   nextRowRightDiag x bd n = if n > length bd || x == 0 then [] else (row n bd !! (x - 1)) : nextRowRightDiag (x - 1) bd (n + 1)
+  --checks the diagonal
   rdiag :: Int -> [[a]] -> [a]
   rdiag x bd
     | x == 0 = []
@@ -68,43 +67,38 @@ module Board where
   --isMarkedBy x y bd p - Does a place (x,y) of a board bd have a stone placed by a player p
   isMarkedBy :: Eq a => Int -> Int -> [[a]] -> a -> Bool
   isMarkedBy x y bd p = row y bd !! (x - 1) == p
+
   --Return the player of the stone placed on a place (x,y) of a board bd
   marker :: Int -> Int -> [[a]] -> a
   marker x y board = row y board !! (x - 1)
 
-
   --Check if board is full
   isFull :: [[String]] -> Bool
-  isFull = checkXY 1 1
-
-  --Checks the coordinates
-  checkXY :: Int -> Int -> [[String]] -> Bool
-  checkXY x y bd
-    | x > (size bd) && y > (size bd) = True
-    | isMarkedBy x y bd "." = False
-    | otherwise = checkXY (x + 1) (y + 1) bd
-
+  isFull = all (notElem ".")
 
   --Check if won conditions
   isWonBy :: Eq t => [[t]] -> t -> Bool
-  isWonBy bd p = (rowsAndCols bd 1 0 0 p || leftAndRightDiag bd 1 0 0 p) == True
+  isWonBy bd p = rowsAndCols bd 1 0 0 p || leftAndRightDiag bd 1 0 0 p
 
+  --Checks rows and columns per player
   rowsAndCols :: (Eq t1, Num t2, Num t3) => [[t1]] -> Int -> t2 -> t3 -> t1 -> Bool
   rowsAndCols board iter index count player
     | iter > length board = False
     | checkWinSequence (row iter board) player || checkWinSequence (column iter board) player = True
     | otherwise = rowsAndCols board (iter + 1) 0 0 player
 
+  --Counts the diaganol stones per player
   leftAndRightDiag :: (Eq t1, Num t2, Num t3) => [[t1]] -> Int -> t2 -> t3 -> t1 -> Bool
   leftAndRightDiag board iter index count player
-    | iter > ((length board) * 2) - 1  = False
+    | iter > (length board * 2) - 1  = False
     | checkWinSequence (ldiag iter board) player || checkWinSequence (rdiag iter board) player = True
     | otherwise = leftAndRightDiag board (iter + 1) 0 0 player
 
+  --Checks if the sequence of stones is a win
   checkWinSequence :: Eq t => [t] -> t -> Bool
   checkWinSequence (h : t) player
     | length t < 4 = False
-    | h == player && and (map (h==) (take 4 t)) = True
+    | h == player && all (h==) (take 4 t) = True
     | otherwise = checkWinSequence t player
 
   --Check if the board is full

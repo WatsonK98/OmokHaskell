@@ -8,6 +8,7 @@ module Main where
   import Board
   import System.IO
   import System.Exit
+  import Control.Monad
 
   --Return the difference of the players entries
   playerToChar :: String -> Char
@@ -89,19 +90,15 @@ module Main where
 
   --Check if the player won
   checkIfWon :: [[[Char]]] -> [Char] -> IO ()
-  checkIfWon bd p = if (isWonBy bd p)
-  then do
-    putStrLn ("Player " ++ p ++ " won.")
-    endGame
-  else return ()
+  checkIfWon bd p = when (isWonBy bd p) $ do
+    putStrLn $ "Player " ++ p ++ " won."
+    main
 
   --Check if its a draw
   checkIfDraw :: [[String]] -> IO ()
-  checkIfDraw bd = if (isDraw bd)
-  then do
-    putStrLn ("Draw.")
-    endGame
-  else return ()
+  checkIfDraw bd = when (isDraw bd) $ do
+    putStrLn "Draw."
+    main
 
   --Ends the Game
   endGame :: IO b
